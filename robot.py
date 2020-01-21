@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 import wpilib
 from wpilib.drive import MecanumDrive
 from wpilib.interfaces import GenericHID
 Hand = GenericHID.Hand
 
-class MyRobot(wpilib.SampleRobot):
+class MyRobot(wpilib.TimedRobot):
     # Channels on the roboRIO that the motor controllers are plugged in to
     frontLeftChannel = 0
     rearLeftChannel = 2
@@ -12,6 +14,7 @@ class MyRobot(wpilib.SampleRobot):
 
     # The channel on the driver station that the joystick is connected to
     joystickChannel = 0
+    joystickChannel2 = 1
 
     def robotInit(self):
         """Robot initialization function"""
@@ -35,21 +38,22 @@ class MyRobot(wpilib.SampleRobot):
 
         self.drive.setExpiration(0.1)
 
-        self.stick = wpilib.XboxController(self.joystickChannel)
+        self.stick = wpilib.Joystick(self.joystickChannel)
+        self.stick2 = wpilib.Joystick(self.joystickChannel2)
         self.speed = 0.5
 
-    def operatorControl(self):
+    def teleopInit(self):
+        self.drive.setSafetyEnabled(True)
+
+    def teleopPeriodic(self):
         """Runs the motors with Mecanum drive."""
 
-        self.drive.setSafetyEnabled(True)
-        while self.isOperatorControl() and self.isEnabled():
-            # Use the joystick X axis for lateral movement, Y axis for forward movement, and Z axis for rotation.
-            # This sample does not use field-oriented drive, so the gyro input is set to zero.
-            self.drive.driveCartesian(
-                (self.speed*self.stick.getX()), (self.speed*self.stick.getY()), (self.speed*self.stick.getX(Hand.kLeft))
-            )
-
-            wpilib.Timer.delay(0.005)  # wait 5ms to avoid hogging CPU cycles
+        # Use the joystick X axis for lateral movement, Y axis for forward movement, and Z axis for rotation.
+        # This sample does not use field-oriented drive, so the gyro input is set to zero.
+        self.drive.driveCartesian(
+            (self.stick.getX()), (self.stick.getY()), (self.stick2.getX()),0
+        )
+        
 
 
 if __name__ == "__main__":
